@@ -16,8 +16,7 @@ exports.novo = async (usuarioId) => {
   const clienteId = codCliente !== '0' ? parseInt(codCliente) || null : null;
 
   // Selecionar produtos
-  const [produtos] = await db.execute('SELECT id, nome, preco_venda FROM produtos WHERE ativo = true AND quantidade_estoque > 0');
-  if (produtos.length === 0) {
+  const [produtos] = await db.execute('SELECT id, nome, preco FROM produtos WHERE ativo = true AND quantidade_estoque > 0');
     console.log('⚠️ Nenhum produto disponível.');
     return;
   }
