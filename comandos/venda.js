@@ -15,10 +15,9 @@ exports.novo = async (usuarioId) => {
   const codCliente = readlineSync.question('Código do cliente (0 se não cadastrado): ');
   const clienteId = codCliente !== '0' ? parseInt(codCliente) || null : null;
 
-  // Selecionar produtos
-  const [produtos] = await db.execute('SELECT id, nome, preco FROM produtos WHERE ativo = true AND quantidade_estoque > 0');
+  // Selecionar produtos (REMOVIDA a condição 'ativo = true')
+  const [produtos] = await db.execute('SELECT id, nome, preco FROM produtos WHERE quantidade_estoque > 0');
   
-  // Verificação de produtos disponíveis (faltava no código original)
   if (produtos.length === 0) {
     console.log('⚠️ Nenhum produto disponível.');
     return;
