@@ -10,7 +10,7 @@ const relatorio = require('./comandos/relatorio');
 let usuarioLogado = null;
 
 // Menu principal após login
-const menuPrincipal = async () => {
+const menuPrincipal = async () => { 
   // Verifica se há caixa aberto (não obrigatório para exibição, mas útil)
   console.log('\n' + '='.repeat(50));
   console.log('☕ COFFEEMANAGER - Sistema de Cafeteria (SENAI)');
@@ -34,7 +34,7 @@ const menuPrincipal = async () => {
       await venda.novo(usuarioLogado.id);
       return menuPrincipal();
     case '2':
-      await cliente.menu();
+      await exibirMenuCliente(cliente);
       return menuPrincipal();
     case '3':
       await produto.menu();
@@ -57,6 +57,39 @@ const menuPrincipal = async () => {
       return menuPrincipal();
   }
 };
+
+async function exibirMenuCliente(cliente) {
+  let opcao;
+  do {
+    console.clear();
+    console.log(`\n=== Bem-vindo(a), ${cliente.nome}! ===`);
+    console.log("1. Ver pedidos anteriores");
+    console.log("2. Fazer novo pedido");
+    console.log("3. Atualizar perfil");
+    console.log("4. Sair");
+    
+    opcao = await obterEntrada("Escolha uma opção: ");
+    
+    switch(opcao) {
+      case '1':
+        await verPedidos(cliente.id);
+        break;
+      case '2':
+        await fazerPedido(cliente.id);
+        break;
+      case '3':
+        await atualizarPerfil(cliente.id);
+        break;
+      case '4':
+        console.log("Até logo!");
+        return;
+      default:
+        console.log("Opção inválida!");
+    }
+    
+    await pausar();
+  } while (opcao !== '4');
+}
 
 // Menu de autenticação (login / cadastro)
 const menuAutenticacao = async () => {

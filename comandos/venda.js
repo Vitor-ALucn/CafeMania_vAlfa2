@@ -15,15 +15,16 @@ exports.novo = async (usuarioId) => {
   const codCliente = readlineSync.question('Código do cliente (0 se não cadastrado): ');
   const clienteId = codCliente !== '0' ? parseInt(codCliente) || null : null;
 
-  // Selecionar produtos
-  const [produtos] = await db.execute('SELECT id, nome, preco_venda FROM produtos WHERE ativo = true AND quantidade_estoque > 0');
+  // Selecionar produtos (REMOVIDA a condição 'ativo = true')
+  const [produtos] = await db.execute('SELECT id, nome, preco FROM produtos WHERE quantidade_estoque > 0');
+  
   if (produtos.length === 0) {
     console.log('⚠️ Nenhum produto disponível.');
     return;
   }
 
   console.log('\n--- PRODUTOS ---');
-  produtos.forEach(p => console.log(`${p.id}. ${p.nome} - R$ ${p.preco_venda}`));
+  produtos.forEach(p => console.log(`${p.id}. ${p.nome} - R$ ${p.preco.toFixed(2)}`));
 
   const itens = [];
   while (true) {
@@ -48,7 +49,7 @@ exports.novo = async (usuarioId) => {
 
   if (itens.length === 0) return;
 
-  let total = itens.reduce((s, i) => s + i.preco_venda * i.quantidade, 0);
+  let total = itens.reduce((s, i) => s + i.preco * i.quantidade, 0);
   console.log(`\nSubtotal: R$ ${total.toFixed(2)}`);
 
   // Aplicar desconto (≤10%)
@@ -77,7 +78,7 @@ exports.novo = async (usuarioId) => {
   // Atualizar estoque
   for (const item of itens) {
     await db.execute('INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)',
-      [venda.insertId, item.id, item.quantidade, item.preco_venda]
+      [venda.insertId, item.id, item.quantidade, item.preco]
     );
     await db.execute('UPDATE produtos SET quantidade_estoque = quantidade_estoque - ? WHERE id = ?', [item.quantidade, item.id]);
     await db.execute('INSERT INTO movimentacao_estoque (produto_id, tipo, quantidade, usuario_id, motivo) VALUES (?, "saida", ?, ?, "Venda")',
@@ -91,7 +92,7 @@ exports.novo = async (usuarioId) => {
   console.log('='.repeat(40));
   console.log(`Venda: #${venda.insertId}`);
   console.log(`Data: ${new Date().toLocaleString('pt-BR')}`);
-  itens.forEach(i => console.log(`${i.quantidade}x ${i.nome} - R$ ${(i.quantidade * i.preco_venda).toFixed(2)}`));
+  itens.forEach(i => console.log(`${i.quantidade}x ${i.nome} - R$ ${(i.quantidade * i.preco).toFixed(2)}`));
   if (desconto > 0) console.log(`Desconto: R$ ${desconto.toFixed(2)}`);
   console.log('-'.repeat(40));
   console.log(`TOTAL: R$ ${total.toFixed(2)}`);
